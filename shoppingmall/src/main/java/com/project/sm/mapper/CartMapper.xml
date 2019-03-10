@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.sm.mapper.CartMapper">
+	
+	<!-- VO와 shop_board 테이블의 필드를 연결해 주기 위한 resultMap -->
+	<resultMap type="CartVO" id="CartVOResult">
+		<result property="cartNum" column="cart_num" />
+		<result property="memberId" column="member_id" />
+		<result property="productId" column="product_id" />
+		<result property="cartCount" column="cart_count" />
+		<result property="cartDate" column="cart_date" />
+	</resultMap>
+	
+<!-- 
+	<insert id="insertCart" parameterType="CartVO">
+		INSERT INTO shop_cart VALUES(
+   			shop_cart_seq.nextval, #{memberId}, #{productId}, #{cartCount}, to_char(sysdate,'yyyy/mm/dd hh24:mi:ss'))
+	</insert>
+ -->
+	
+<!-- 	<procedure id="insertCart" parameterMap="paramMap"> -->
+<!-- 		{? = call f_shop_cart(?, ?, ?)} -->
+<!-- 	</procedure> -->
+	
+	<!-- <select id="insertCart" statementType="CALLABLE" resultType="int">
+    	 #{v_result, jdbcType=NUMERIC, mode=OUT} = call f_shop_cart(#{member_id, mode=IN, jdbcType=VARCHAR}, 
+			  #{product_id, mode=IN, jdbcType=VARCHAR},
+			  #{cart_count, mode=IN, jdbcType=NUMERIC})
+    </select> -->
+    
+<!--     <select id="insertCart" statementType="CALLABLE" resultType="int" parameterMap="paramMap"> -->
+<!--     	 {? = call f_shop_cart(?, ?, ?)} -->
+<!--     </select> -->
+	
+<!-- 	<select id="insertCart" resultType="int" statementType="CALLABLE"> -->
+<!-- 		select f_shop_cart(#{memberId}, #{productId}, #{cartCount}) -->
+<!-- 	</select> -->
+	
+	<select id="insertCart" statementType="CALLABLE">
+		{ call p_cart_insert(#{memberId, mode=IN, jdbcType=VARCHAR}, 
+							 #{productId, mode=IN, jdbcType=VARCHAR},
+							 #{cartCount, mode=IN, jdbcType=NUMERIC}) }						   
+	</select> 
+	 
+	<select id="listCart" parameterType="String" resultMap="CartVOResult">
+		SELECT * FROM shop_cart WHERE member_id=#{memberId} ORDER BY cart_date ASC 
+	</select>
+	
+	<select id="countCart" resultType="int" parameterType="String">
+		SELECT COUNT(*) FROM shop_cart WHERE member_id=#{memberId}
+	</select>
+	
+	<update id="updateCart" parameterType="CartVO">
+		UPDATE shop_cart SET cart_count=#{cartCount} WHERE cart_num=#{cartNum}
+	</update>
+	
+	<select id="selectCartCount" parameterType="int" resultType="int">
+		SELECT cart_count FROM shop_cart WHERE cart_num=#{cartNum}
+	</select>
+	
+	<delete id="deleteCart" parameterType="CartVO">
+		DELETE FROM shop_cart WHERE member_id=#{memberId} AND cart_num=#{cartNum}
+	</delete>
+	
+</mapper>

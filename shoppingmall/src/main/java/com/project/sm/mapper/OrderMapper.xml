@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.sm.mapper.OrderMapper">
+	
+	<!-- VO와 shop_board 테이블의 필드를 연결해 주기 위한 resultMap -->
+	<resultMap type="OrderVO" id="OrderVOResult">
+		<result property="productId" column="product_id" />
+		<result property="purchaseCount" column="purchase_count" />
+		<result property="purchasePrice" column="purchase_price" />
+		<result property="paymentDate" column="payment_date" />
+		<result property="delivery" column="delivery" />
+		<result property="id" column="id" />
+		<result property="orderNum" column="order_num" />
+		<result property="deliveryMessage" column="delivery_message" />
+	</resultMap>
+	
+	<insert id="orderInsert">
+		 INSERT INTO shop_order(product_id, purchase_count, purchase_price, payment_date, delivery, id, order_num)
+   		 VALUES(#{productId}, #{purchaseCount}, #{purchasePrice},  to_char(sysdate,'yyyy/mm/dd hh24:mi:ss'),
+   		 		 'n', #{id}, shop_order_seq.NEXTVAL)
+	</insert>
+	
+	<select id="orderList" resultMap="OrderVOResult">
+		SELECT * FROM shop_order ORDER BY payment_date DESC
+	</select>
+	
+	<update id="updateDelivery">
+		UPDATE shop_order SET delivery=#{delivery} WHERE order_num=#{orderNum}
+	</update>
+	
+	<select id="memberOrderList" parameterType="String" resultMap="OrderVOResult">
+		SELECT * FROM shop_order WHERE id=#{id} ORDER BY payment_date DESC
+	</select>
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.sm.mapper.ProductMapper">
+	
+	
+	<!-- VO와 shop_Product 테이블의 필드를 연결해 주기 위한 resultMap -->
+	<resultMap type="ProductVO" id="ProductVOResult">
+		<result property="productId" column="product_id" />
+		<result property="mainCategory" column="main_category" />
+		<result property="subCategory" column="sub_category" />
+		<result property="productName" column="product_name" />
+		<result property="productPrice" column="product_price" />
+		<result property="productTitleImg" column="product_title_img" />
+		<result property="productExplainImg" column="product_explain_img" />
+		<result property="productStock" column="product_stock" />
+		<result property="productContent" column="product_content" />
+		<result property="productDate" column="product_date" />
+		<result property="discountRate" column="discount_rate" />
+		<result property="orderCount" column="order_count" />
+	</resultMap>
+	
+	
+	<!-- viewProduct -->
+	<select id="viewProduct" resultMap="ProductVOResult">
+		SELECT *
+		  FROM shop_product
+		 WHERE product_id = #{productId}
+	</select>
+	
+	
+	<!-- insertProduct -->
+	<insert id="insertProduct" parameterType="ProductVO">
+		  INSERT INTO shop_product 
+			(product_id, main_category, sub_category, product_name, product_price, 
+			 product_stock, product_title_img, product_explain_img, product_date) VALUES	(
+			   #{productId}, #{mainCategory}, #{subCategory} , #{productName},
+			   #{productPrice}, #{productStock}, #{productTitleImg}, #{productExplainImg}, to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'))
+	</insert>
+
+	
+	<!-- updateProduct -->
+	<update id="updateProduct" parameterType="ProductVO">
+		UPDATE shop_product 
+		   SET product_stock=product_stock+#{productStock}, order_count=order_count+#{orderCount},
+			   discount_rate=discount_rate+#{discountRate}
+		   WHERE product_id=#{productId}
+	</update>
+
+	
+	<!-- deleteProduct -->
+	<delete id="deleteProduct" parameterType="string">
+		DELETE FROM shop_product
+		 WHERE product_id = #{productId}
+	</delete>
+
+
+	<!-- getAllProductList -->
+	<select id="getAllProductList" resultType="ProductVO">
+		SELECT * FROM shop_product
+	</select>
+	
+	
+	<!-- viewSubCategory -->
+	<select id="viewSubCategory" resultType="String" parameterType="String">
+		 SELECT DISTINCT(sub_category)
+		   FROM shop_product
+		  WHERE main_category = #{mainCategory}
+		  ORDER BY 1
+	</select>
+	
+	
+	<!-- 서브 카테고리에 맞는 상품 리스트(페이지 처리 추가) -->
+	<select id="productPageProcessingList" resultType="ProductVO">
+		SELECT *
+		  FROM (SELECT m.*, FLOOR((ROWNUM - 1)/#{pageLimit} + 1) page
+				  FROM (SELECT *
+						  FROM shop_product
+						 )
+				m)
+		WHERE page = #{page}
+		  AND sub_category = #{subCategory}
+	</select>
+	
+	
+	<!-- 전체 상품의 총 개수를 카운트 -->
+	<select id="getAllProductCount" resultType="int">
+		SELECT COUNT(*)
+		  FROM shop_product
+	</select>
+	
+	
+	
+</mapper>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.1.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+
+	<!-- Addtional Trasactional Usage : @Transactional ~~ -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<context:annotation-config />
+
+	<context:component-scan	base-package="com.project.sm.mapper" />
+
+	<context:component-scan	base-package="com.project.sm.dao" />
+
+	<context:component-scan	base-package="com.project.sm.aop" />
+
+	<!-- AOP ready -->
+	<aop:aspectj-autoproxy />
+
+	<!-- Oracle JDBC Connection Setting -->
+	<!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource"> 
+		<property name="driverClass" value="oracle.jdbc.OracleDriver" /> 
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe" /> 
+		<property name="username" value="java" />
+		<property name="password" value="java" /> </bean> -->
+
+	<!-- // apache DBCP2 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close" 
+		  p:driverClassName="oracle.jdbc.OracleDriver"
+		  p:url="jdbc:oracle:thin:@localhost:1521:xe" 
+		  p:username="java"
+		  p:password="java" 
+		  p:maxTotal="20" 
+		  p:maxIdle="10" 
+		  p:maxWaitMillis="-1" />
+
+	<!-- MyBatis -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- <tx:jta-transaction-manager /> -->
+
+	<!-- Transaction Advices -->
+	<!-- ////////////////////////////////////////////////////////////// -->
+	<tx:advice id="txBoardAdvice"
+		transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="articleCombineList" 		read-only="true" />
+			<tx:method name="articleList" 				read-only="true" />
+			<tx:method name="articlePageProcessingList" read-only="true" />
+			<tx:method name="articleSearchList" 		read-only="true" />
+			<tx:method name="getAllArticle" 			read-only="true" />
+			<tx:method name="getAllSearchArticleCount"	read-only="true" />
+			<tx:method name="viewBoard" 				read-only="true" />
+			<tx:method name="deleteBoard" 				propagation="REQUIRED" />
+			<tx:method name="insertBoard" 				propagation="REQUIRED" />
+			<tx:method name="updateBoard" 				propagation="REQUIRED" />
+			<tx:method name="updateReadCount"			propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	<!-- ////////////////////////////////////////////////////////////// -->
+
+	<!-- AOP Transaction config -->
+	<aop:config>
+		<aop:advisor
+			pointcut="execution(* *..BoardDAOImpl.*(..))"
+			advice-ref="txBoardAdvice" />
+	</aop:config>
+
+	<bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate"
+		  p:transactionManager-ref="transactionManager" />
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage"	
+				  value="com.project.sm.vo" />
+		<property name="configuration">
+		    <bean class="org.apache.ibatis.session.Configuration">
+		      <property name="mapUnderscoreToCamelCase" value="true"/>
+		    </bean>
+		</property>		  
+		<property name="mapperLocations" value="classpath:com/project/sm/mapper/*.xml" />
+	</bean>
+
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+
+</beans>

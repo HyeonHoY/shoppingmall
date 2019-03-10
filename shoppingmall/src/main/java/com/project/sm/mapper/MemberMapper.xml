@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<!-- 다른 mapper와 중복되지 않도록 네임스페이스에 기재 -->	
+<mapper namespace="com.project.sm.mapper.MemberMapper">
+
+	<!-- 검색조건 -->
+	<sql id="search">
+		<choose>
+			<!-- 검색옵션이 전체 검색일 경우 -->
+			<when test="searchOption == 'all' ">
+				WHERE id like '%' || #{keyword} || '%'
+				OR name like '%' || #{keyword} || '%'
+				OR email like '%' || #{keyword} || '%'
+				OR phone like '%' || #{keyword} || '%'
+			</when>
+			<!-- 전체 검색이 아닐 경우 -->
+			<otherwise>
+				WHERE ${searchOption} like '%' || #{keyword} || '%'
+			</otherwise>
+		</choose>
+	</sql>		
+	
+	<!-- 회원 등급까지 보기위한 검색 조건 추가 -->
+	<sql id="search2">
+		<choose>
+			<!-- 검색옵션이 전체 검색일 경우 -->
+			<when test="searchOption == 'all' ">
+				WHERE (m.id like '%' || #{keyword} || '%'
+				OR m.name like '%' || #{keyword} || '%'
+				OR m.email like '%' || #{keyword} || '%'
+				OR m.phone like '%' || #{keyword} || '%'
+				OR r.role like '%' || #{keyword} || '%')
+			</when>
+			<!-- 전체 검색이 아닐 경우 -->
+			<otherwise>
+				WHERE (${searchOption} like '%' || #{keyword} || '%')
+			</otherwise>
+		</choose>
+	</sql>		
+
+	<!-- 아이디 체크 -->
+	<select id="idCheck" parameterType="String" resultType="String">
+		SELECT id FROM shop_member WHERE id=#{id}
+	</select>
+	
+	<!-- 회원가입 -->
+	<insert id="insertMember" parameterType="MemberVO">
+		INSERT INTO shop_member
+			(id, pw, name, email, phone, zip, address, gender, birthday, joindate)
+		VALUES
+			(#{id}, #{pw}, #{name}, #{email}, #{phone}, #{zip}, #{address}, #{gender}, #{birthday}, to_char(sysdate, 'YYYYMMDD HH24:MI:SS'))
+	</insert>
+	
+	<!-- 회원등급 등록 default role_user -->
+	<insert id="insertMemberRole" parameterType="MemberVO">
+		INSERT INTO shop_member_role
+			(id_count, id)
+		VALUES
+			(shop_member_role_id_seq.NEXTVAL, #{id})
+	</insert>
+	 	
+	<!-- 회원 리스트 -->	 	
+	<select id="listMember" resultType="MemberVO">
+		SELECT * FROM shop_member
+		ORDER BY id ASC
+	</select>
+	
+	<!-- 회원 리스트(페이지 추가) -->
+	<select id="viewAllMember" resultType="MemberResultVO"> <!--  resultMap="member, role" -->
+		SELECT * FROM(SELECT ma.*
+                    FROM( select rownum AS rnum, m.*, r.role 
+                          FROM 
+                          (SELECT * FROM shop_member ORDER BY joindate) m, 
+                          shop_member_role r
+                          WHERE m.id=r.id) ma)
+          WHERE rnum BETWEEN #{start} AND #{end}
+	</select>
+	 
+	<!-- 회원 리스트(검색 추가) --> 
+	<select id="searchMember" resultType="MemberVO">
+		SELECT * FROM shop_member
+    	<include refid="search"></include>
+    	order by id ASC
+	</select>	
+	
+	<!-- 회원 리스트(검색, 페이지 기능) -->
+	<select id="combineListMember" resultType="MemberResultVO">
+		SELECT * FROM (
+    		SELECT rownum AS rnum, m.*, r.role 
+   				FROM shop_member m, shop_member_role r
+    			<include refid="search2"></include>
+    			AND m.id = r.id
+    			ORDER BY joindate ASC)
+         WHERE rnum BETWEEN #{start} AND #{end}
+	</select>
+	
+	<!-- 회원 상세보기 -->
+	<select id="viewMember" resultType="MemberVO">
+		SELECT *
+		FROM shop_member
+		WHERE id = #{id}
+	</select>
+	
+	<!-- 전체 회원 카운트 -->
+	<select id="memberCount" resultType="int">
+		SELECT COUNT(*)
+		FROM shop_member
+	</select>
+	
+	<!-- 검색 조건에 맞는 회원 카운트 -->	
+	<select id="searchMemberCount" resultType="int">
+		SELECT count(*) FROM (
+    		SELECT m.*, r.role 
+   				FROM shop_member m, shop_member_role r
+    			<include refid="search2"></include>
+    			AND m.id = r.id) 
+	</select>
+	
+	<!-- 회원 삭제 -->
+	<delete id="deleteMember" parameterType="MemberVO">
+		DELETE
+		FROM shop_member
+		WHERE id=#{id} AND pw=#{pw}
+	</delete>
+	
+	<!-- 등급 수정 -->
+	<update id="updateRole">
+		UPDATE shop_member_role SET role=#{role} WHERE id=#{id}
+	</update>
+	
+	<!-- role 등급만 가져오기 -->
+	<select id="viewRole" parameterType="String" resultType="String">
+		SELECT role FROM shop_member_role WHERE id=#{id} 
+	</select>
+	
+	<!-- 회원이 삭제될 경우 회원 등급 테이블에 있는 정보도 삭제 -->
+	<delete id="deleteMemberRole" parameterType="String">
+		DELETE
+		FROM shop_member_role
+		WHERE id=#{id}
+	</delete>
+	
+	<!-- 핸드폰 번호 바꾸기 -->
+	<update id="phoneChange" parameterType="MemberVO">
+		UPDATE shop_member SET phone=#{phone} WHERE id=#{id} AND pw=#{pw}
+	</update> 
+	
+	<!-- 이메일 바꾸기 -->
+	<update id="emailChange" parameterType="MemberVO">
+		UPDATE shop_member SET email=#{email} WHERE id=#{id} AND pw=#{pw}
+	</update>
+	
+	<!-- 주소 바꾸기 -->
+	<update id="addressChange" parameterType="MemberVO">
+		UPDATE shop_member SET zip=#{zip}, address=#{address} WHERE id=#{id} AND pw=#{pw}
+	</update>
+</mapper>

@@ -1,0 +1,78 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+<!-- meta data -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<!-- bootstrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+<!-- Angular JS -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.min.js"></script>
+
+<!-- jQuery ui 1.12.1 -->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+<!-- bootstrap pagination -->
+<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.4.2/css/all.css'
+ 	  integrity='sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns' 
+ 	  crossorigin='anonymous'>
+
+<!-- bootstrap boardWrite Icon(pen-fency) -->
+<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.5.0/css/all.css' 
+	  integrity='sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU' 
+	  crossorigin='anonymous'>
+
+<!-- bootstrap pagination Icon-->
+<link rel='stylesheet'
+	href='https://use.fontawesome.com/releases/v5.4.2/css/all.css'>
+
+<!-- 폰트 설정 -->
+<style>
+/* src에서 url을 절대경로로 잡아줄 것! ${pageContext.request.contextPath}*/
+
+/* acme-regular - latin */
+ @font-face {
+  font-family: 'Acme';
+  font-style: normal;
+  font-weight: 400;
+  src: url('${pageContext.request.contextPath}/fonts/acme-v7-latin-regular.eot'); /* IE9 Compat Modes */
+  src: local('Acme Regular'), local('Acme-Regular'),
+       url('${pageContext.request.contextPath}/fonts/acme-v7-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('${pageContext.request.contextPath}/fonts/acme-v7-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('${pageContext.request.contextPath}/fonts/acme-v7-latin-regular.woff') format('woff'), /* Modern Browsers */
+       url('${pageContext.request.contextPath}/fonts/acme-v7-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('${pageContext.request.contextPath}/fonts/acme-v7-latin-regular.svg#Acme') format('svg'); /* Legacy iOS */
+}
+
+
+/* src에서 url을 절대경로로 잡아줄 것! ${pageContext.request.contextPath}*/
+/* jua-regular - korean */
+@font-face {
+  font-family: 'Jua';
+  font-style: normal;
+  font-weight: 400;
+  src: url('${pageContext.request.contextPath}/fonts/jua-v5-korean-regular.eot'); /* IE9 Compat Modes */
+  src: local('Jua Regular'), local('Jua-Regular'),
+       url('${pageContext.request.contextPath}/fonts/jua-v5-korean-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('${pageContext.request.contextPath}/fonts/jua-v5-korean-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('${pageContext.request.contextPath}/fonts/jua-v5-korean-regular.woff') format('woff'), /* Modern Browsers */
+       url('${pageContext.request.contextPath}/fonts/jua-v5-korean-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('${pageContext.request.contextPath}/fonts/jua-v5-korean-regular.svg#Jua') format('svg'); /* Legacy iOS */
+}
+
+
+.cont {
+	font-family: 'Jua';
+	font-style: normal;
+  	font-weight: 400;
+  	font-size : 16px;
+}
+</style>

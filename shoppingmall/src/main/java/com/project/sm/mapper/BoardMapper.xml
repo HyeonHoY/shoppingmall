@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.sm.mapper.BoardMapper">
+	
+	<!-- VO와 shop_board 테이블의 필드를 연결해 주기 위한 resultMap -->
+	<resultMap type="BoardVO" id="BoardVOResult">
+		<result property="boardNum" column="board_num" />
+		<result property="boardKinds" column="board_kinds"/>
+		<result property="boardWriter" column="board_writer" />
+		<result property="boardPw" column="board_pw" />
+		<result property="boardSubject" column="board_subject" />
+		<result property="boardContent" column="board_content" />
+		<result property="boardFile" column="board_file" />
+		<result property="boardReRef" column="board_re_ref" />
+		<result property="boardReLev" column="board_re_lev" />
+		<result property="boardReSeq" column="board_re_seq" />
+		<result property="boardReadCount" column="board_read_count" />
+		<result property="boardDate" column="board_date" />
+		<result property="productId" column="product_id" />
+	</resultMap>
+
+	<!-- 검색의 옵션을 기준으로 값을 다르게 해주기위한 조건 -->
+	<sql id="search">
+		<choose>
+			<!-- 검색옵션이 전체 검색일 경우 -->
+			<when test="searchOption == 'all' ">
+				WHERE (board_writer like '%' || #{keyword} || '%'
+				OR board_content like '%' || #{keyword} || '%'
+				OR board_subject like '%' || #{keyword} || '%')
+			</when>
+			<!-- 전체 검색이 아닐 경우 -->
+			<otherwise>
+				WHERE (${searchOption} like '%' || #{keyword} || '%')
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="kinds">
+		<choose>
+			<!-- 검색옵션이 전체 검색일 경우 -->
+			<when test="boardKinds == 1 || productId == 'null'">
+				WHERE board_kinds = #{boardKinds}
+			</when>
+			<!-- 전체 검색이 아닐 경우 -->
+			<otherwise>
+				WHERE board_kinds = #{boardKinds} AND product_id=#{productId}
+			</otherwise>
+		</choose>
+	</sql>
+
+	<!-- 게시판 등록 -->
+	<insert id="insertBoard" parameterType="BoardVO">
+		<choose>
+			<when test="boardPw =='null' ">
+				INSERT INTO shop_board
+				(board_num,board_kinds, board_writer, board_subject, board_file, board_content, board_date, product_id)
+				VALUES(shop_board_seq.NEXTVAL,#{boardKinds}, #{boardWriter}, #{boardSubject}, #{boardFile},
+				#{boardContent}, sysdate, #{productId})
+			</when>
+			<otherwise>
+				INSERT INTO shop_board
+				(board_num,board_kinds, board_pw, board_writer, board_subject, board_file, board_content, board_date, product_id)
+				VALUES(shop_board_seq.NEXTVAL,#{boardKinds}, #{boardPw}, #{boardWriter}, #{boardSubject}, #{boardFile},
+				#{boardContent}, sysdate, #{productId})
+			</otherwise>
+		</choose>
+	</insert>
+	
+	<select id="getLastSeq" resultType="int"> 
+		SELECT last_number 
+		FROM USER_SEQUENCES 
+		WHERE SEQUENCE_NAME = UPPER('shop_board_seq') 
+	</select>
+	
+	<!-- 마지막 시퀀스 번호 count -->
+<!-- 	<select id="getLastSeq" resultType="int"> -->
+<!-- 		SELECT shop_board_seq.nextval FROM dual -->
+<!-- 	</select> -->
+
+	<!-- 전체 게시판의 총 개수를 카운트 -->
+	<select id="getAllArticleCount" resultType="int">
+		SELECT COUNT(*)
+		FROM shop_board
+		WHERE board_kinds=#{boardKinds}
+	</select>
+
+	<!-- 검색했을 때 조건에 맞는 개수를 카운트 -->
+	<select id="getAllSearchArticleCount" resultType="int">
+		SELECT COUNT(*)
+		FROM shop_board
+		<include refid="search"></include>
+		AND board_kinds=#{boardKinds}
+	</select>
+	
+	<!-- 전체 게시판 리스트-->
+	<select id="articleList" resultMap="BoardVOResult">
+		SELECT *
+		FROM shop_board
+		ORDER BY board_date DESC
+	</select>
+	
+	<!-- 전체 게시판 리스트(페이지 처리 추가) -->
+	<select id="articlePageProcessingList" resultMap="BoardVOResult">
+		SELECT *
+		FROM (SELECT m.*,
+		FLOOR((ROWNUM - 1)/#{pageLimit} + 1) page
+		FROM (SELECT *
+		FROM shop_board
+		<include refid="kinds"></include>
+		ORDER BY board_date DESC)
+		m)
+		WHERE page = #{page}
+	</select>
+	
+	
+	<!-- 전체 게시판 리스트(페이지 처리 추가) -->
+	<!-- <select id="articlePageProcessingListOfBoardKinds" resultMap="BoardVOResult">
+		SELECT *
+			FROM (SELECT m.*, FLOOR((ROWNUM - 1)/#{pageLimit} + 1) page
+					FROM (SELECT *
+							FROM shop_board
+							<include refid="kinds"></include>
+					ORDER BY board_date DESC)
+					   m)
+		WHERE page = #{page}
+	</select> -->
+	
+	
+	<!-- 게시판 리스트(검색 기능 추가) -->
+	<select id="articleSearchList" resultMap="BoardVOResult">
+		SELECT *
+		FROM shop_board
+		<include refid="search"></include>
+		ORDER BY board_date DESC
+	</select>
+	
+	<!-- 게시판 리스트(검색, 페이지 기능) -->
+	<select id="articleCombineList" resultMap="BoardVOResult">
+		SELECT *
+		FROM (SELECT m.*,
+		FLOOR((ROWNUM - 1)/#{pageLimit} + 1) page
+		FROM (SELECT *
+		FROM shop_board
+		<include refid="search"></include>
+		AND board_kinds=#{boardKinds}
+		ORDER BY board_date DESC)
+		m)
+		WHERE page = #{page}
+	</select>
+
+	<!-- 게시판 상세보기 -->
+	<select id="viewBoard" resultMap="BoardVOResult"
+		parameterType="int">
+		SELECT board_num, board_kinds, board_pw, board_writer, board_subject, board_read_count, board_content, board_file
+		FROM shop_board
+		WHERE board_num = #{boardNum}
+	</select>
+
+	<!-- 게시판 수정 -->
+	<update id="updateBoard" parameterType="BoardVO">
+		<choose>
+			<!-- 파일을 수정하지 않았을 때 -->
+			<when test="boardFile == null">
+				UPDATE shop_board
+					SET
+					board_subject=#{boardSubject}, board_pw=#{boardPw}, board_content=#{boardContent}
+					WHERE
+					board_num=#{boardNum}
+			</when>
+			<!-- 파일을 수정했을 때 -->
+			<otherwise>
+				UPDATE shop_board
+					SET
+					board_subject=#{boardSubject}, board_pw=#{boardPw}, board_content=#{boardContent}, board_file=#{boardFile}
+					WHERE
+					board_num=#{boardNum}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<!-- 게시판 조회수 증가 -->
+  	<update id="updateReadCount" parameterType="int">
+      UPDATE shop_board SET
+              board_read_count = board_read_count + 1
+       WHERE board_num = #{boardNum}
+  	</update>
+
+	<!-- 게시판 삭제 -->
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM shop_board
+		WHERE
+		board_num=#{boardNum}
+	</delete>
+	
+</mapper>

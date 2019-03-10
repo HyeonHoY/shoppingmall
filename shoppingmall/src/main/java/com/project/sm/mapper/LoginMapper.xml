@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.sm.mapper.LoginMapper">
+	
+	<select id="loginCheck" parameterType="MemberVO" resultType="int">
+		SELECT COUNT(*) FROM shop_member
+		WHERE id = #{id} AND pw = #{pw}
+	</select>
+	
+	<!-- 아이디 찾기 -->
+	<select id="idFind" parameterType="MemberVO" resultType="String">
+		SELECT id
+		FROM shop_member
+		WHERE
+        name=#{name} AND phone=#{phone}
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<select id="pwFind" parameterType="MemberVO" resultType="String">
+		SELECT pw 
+		FROM shop_member
+		WHERE
+        id=#{id} AND name=#{name}
+	</select>
+	
+	<!-- 회원 상세보기 -->
+	<select id="viewMember" resultType="MemberVO" parameterType="String">
+		SELECT 
+			id, name 
+		FROM shop_member 
+		WHERE 
+			id = #{id}
+	</select>
+	
+	<!-- 회원 등급 상세보기 -->
+	<select id="viewMemberRole" resultType="MemberRoleVO" parameterType="String">
+		SELECT 
+			id_count,id,role 
+		FROM shop_member_role
+		WHERE 
+			id = #{id}
+	</select>
+	
+	<!-- 비밀번호 바꾸기 -->
+	<update id="updatePw" parameterType="MemberVO">
+		UPDATE shop_member 
+		SET
+			pw=#{pw}
+		WHERE
+			id=#{id}
+	</update>
+</mapper>

@@ -1,0 +1,4 @@
+http://localhost:8181/sm/board/viewJsonBoard.do?num=104&boardNum=104
+http://localhost:8181/sm/board/viewJsonReply.do?num=104&boardNum=104
+http://localhost:8181/sm/board/viewJsonBoard.do?boardNum=87
+http://localhost:8181/sm/reply/update.do?replyNo=522&boardNum=78&replyContent=zzz

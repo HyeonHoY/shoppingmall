@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<!-- 다른 mapper와 중복되지 않도록 네임스페이스에 기재 -->	
+<mapper namespace="com.project.sm.mapper.ReplyMapper">
+
+	<resultMap type="ReplyVO" id="ReplyVOResult">
+		<result property="replyNo" column="reply_no" />
+		<result property="boardNum" column="board_num" />
+		<result property="replyContent" column="reply_content" />
+		<result property="replyWriter" column="reply_writer" />
+		<result property="regdate" column="regdate" />
+		<result property="updatedate" column="updatedate" />
+		<result property="securityReply" column="security_reply" />
+		<result property="userWriter" column="user_writer" />
+	</resultMap>
+	
+	<insert id="insertReply" parameterType="ReplyVO">
+		INSERT INTO shop_board_reply
+		(reply_no, board_num, reply_content, reply_writer, regdate)
+		VALUES 
+		(reply_no_seq.NEXTVAL, #{boardNum}, #{replyContent}, 
+		#{replyWriter}, sysdate)
+	</insert>
+	
+	<select id="getReply" parameterType="int" resultMap="ReplyVOResult">
+		SELECT * FROM shop_board_reply WHERE reply_no = #{replyNo} 
+	</select>
+	
+	<!-- 댓글 페이지 처리 X -->
+	<select id="listReply" resultMap="ReplyVOResult" parameterType="int">
+		SELECT * FROM shop_board_reply WHERE board_num = #{boardNum} ORDER BY regdate DESC
+	</select>
+	
+	<!-- 댓글 페이지 처리O -->
+	<select id="listReplyPageing" resultMap="ReplyVOResult">
+		SELECT * FROM (
+			SELECT reply_no, reply_writer, reply_content, regdate, rownum AS rnum FROM(
+		        SELECT * FROM shop_board_reply ORDER BY regdate DESC)
+		            shop_board_reply WHERE board_num=#{boardNum}
+		        )WHERE rnum BETWEEN #{start} AND #{end}
+	</select>
+	
+	<select id="listReplyCount" resultType="int" parameterType="int">
+		SELECT COUNT(*) FROM shop_board_reply WHERE board_num = #{boardNum}
+	</select>
+	
+	<update id="updateReply" parameterType="ReplyVO">
+		UPDATE shop_board_reply SET reply_content=#{replyContent}, updatedate=sysdate
+		WHERE board_num=#{boardNum} AND reply_no=#{replyNo}
+	</update>
+	
+	<delete id="deleteReply">
+		DELETE FROM shop_board_reply
+		WHERE
+		board_num=#{boardNum} AND reply_no=#{replyNo}
+	</delete>
+	
+	<select id="hasReplyByBoardNumAndReplyNo" resultType="int">
+		SELECT count(*) FROM shop_board_reply 
+		WHERE board_num=#{boardNum} AND reply_no=#{replyNo}
+	</select> 
+</mapper>
