@@ -91,6 +91,12 @@ public class AdminController {
 		}
 	}
 	
+	/**
+	 * 상품 관련 리스트 
+	 * @param model 장품 전체 리스트 저장
+	 * @param num 관리지 여부 확인
+	 * @return
+	 */
 	@RequestMapping("adminProductList.do")
 	public String adminProductList(Model model,
 									@RequestParam("num") int num) {
